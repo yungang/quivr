@@ -1,8 +1,9 @@
-from jose import jwt
-from typing import Optional
-from datetime import datetime, timedelta
-from jose.exceptions import JWTError
 import os
+from datetime import datetime, timedelta
+from typing import Optional
+
+from jose import jwt
+from jose.exceptions import JWTError
 
 SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
@@ -22,5 +23,10 @@ def decode_access_token(token: str):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_aud": False})
         return payload
     except JWTError as e:
-        print(f"JWTError: {str(e)}")
         return None
+
+def get_user_email_from_token(token: str):
+    payload = decode_access_token(token)
+    if payload:
+        return payload.get("email")
+    return "none"

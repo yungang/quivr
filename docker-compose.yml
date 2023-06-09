@@ -9,10 +9,6 @@ services:
       dockerfile: Dockerfile
     container_name: web
     restart: always
-    volumes:
-      - ./frontend/:/app
-      - /app/node_modules
-      - /app/.next
     ports:
       - 3000:3000
   backend:
@@ -25,5 +21,6 @@ services:
     restart: always
     volumes:
       - ./backend/:/code/
+      - ~/.config/gcloud:/root/.config/gcloud
     ports:
       - 5050:5050

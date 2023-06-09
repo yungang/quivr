@@ -12,6 +12,8 @@
 
 Quivr, your second brain, utilizes the power of GenerativeAI to store and retrieve unstructured information. Think of it as Obsidian, but turbocharged with AI capabilities.
 
+[Roadmap here](https://getquivr.notion.site/Quivr-GenerativeAI-Second-Brain-3b22a6f50ffe4d259a6f120a17bc0543) 
+
 ## Key Features 🎯
 
 - **Universal Data Acceptance**: Quivr can handle almost any type of data you throw at it. Text, images, code snippets, we've got you covered.
@@ -88,23 +90,38 @@ cp .frontend_env.example frontend/.env
 - **Step 3**: Update the `backend/.env` and `frontend/.env` file 
 
 > _Your `supabase_service_key` can be found in your Supabase dashboard under Project Settings -> API. Use the `anon` `public` key found in the `Project API keys` section._
+
+
 > _Your  `JWT_SECRET_KEY`can be found in your supabase settings under Project Settings -> JWT Settings -> JWT Secret_
+
+> _To activate vertexAI with PaLM from GCP follow the instructions [here](https://python.langchain.com/en/latest/modules/models/llms/integrations/google_vertex_ai_palm.html) and update `bacend/.env`- It is an advanced feature, please be expert in GCP before trying to use it_
+
+- [ ] Change variables in `backend/.env`
+- [ ] Change variables in `frontend/.env`
 
 - **Step 4**: Run the following migration scripts on the Supabase database via the web interface (SQL Editor -> `New query`)
 
-[Migration Script 1](scripts/supabase_vector_store_document.sql)
+[Migration Script 1](scripts/supabase_new_store_documents.sql)
 
 [Migration Script 2](scripts/supabase_usage_table.sql)
 
 [Migration Script 3](scripts/supabase_vector_store_summary.sql)
 
+[Migrations Script 4](scripts/supabase_users_table.sql)
+
 - **Step 5**: Launch the app
 
 ```bash
-docker compose build && docker compose up
+docker compose -f docker-compose.yml up --build
 ```
 
 - **Step 6**: Navigate to `localhost:3000` in your browser
+
+- ** Step 7**: Want to contribute to the project? 
+
+```
+docker compose -f docker-compose.dev.yml up --build
+```
 
 
 

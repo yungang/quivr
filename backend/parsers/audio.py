@@ -1,15 +1,17 @@
 import os
-from tempfile import NamedTemporaryFile
 import tempfile
-from io import BytesIO
 import time
+from io import BytesIO
+from tempfile import NamedTemporaryFile
+
 import openai
+from fastapi import UploadFile
 from langchain.document_loaders import TextLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from utils import compute_sha1_from_content, documents_vector_store
 from langchain.schema import Document
-from fastapi import UploadFile
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from utils.file import compute_sha1_from_content
+from utils.vectors import documents_vector_store
 
 # # Create a function to transcribe audio using Whisper
 # def _transcribe_audio(api_key, audio_file, stats_db):
@@ -29,8 +31,8 @@ from fastapi import UploadFile
 
 #     return transcript
 
-
-async def process_audio(upload_file: UploadFile, stats_db):
+# async def process_audio(upload_file: UploadFile, stats_db):
+async def process_audio(upload_file: UploadFile, enable_summarization: bool, user):
 
     file_sha = ""
     dateshort = time.strftime("%Y%m%d-%H%M%S")
@@ -52,7 +54,6 @@ async def process_audio(upload_file: UploadFile, stats_db):
 
     file_sha = compute_sha1_from_content(transcript.text.encode("utf-8"))
     file_size = len(transcript.text.encode("utf-8"))
-    print(file_size)
 
     # Load chunk size and overlap from sidebar
     chunk_size = 500

@@ -1,6 +1,6 @@
 import { useSupabase } from "@/app/supabase-provider";
 import { useToast } from "@/lib/hooks/useToast";
-import axios from "axios";
+import { useAxios } from "@/lib/useAxios";
 import { redirect } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import { isValidUrl } from "../helpers/isValidUrl";
@@ -10,12 +10,13 @@ export const useCrawler = () => {
   const urlInputRef = useRef<HTMLInputElement | null>(null);
   const { session } = useSupabase();
   const { publish } = useToast();
+  const { axiosInstance } = useAxios();
+
   if (session === null) {
     redirect("/login");
   }
 
   const crawlWebsite = useCallback(async () => {
-    setCrawling(true);
     // Validate URL
     const url = urlInputRef.current ? urlInputRef.current.value : null;
 
@@ -25,7 +26,6 @@ export const useCrawler = () => {
         variant: "danger",
         text: "Invalid URL",
       });
-      setCrawling(false);
       return;
     }
 
@@ -38,16 +38,10 @@ export const useCrawler = () => {
       max_time: 60,
     };
 
+    setCrawling(true);
+
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/crawl`,
-        config,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
+      const response = await axiosInstance.post(`/crawl/`, config);
 
       publish({
         variant: response.data.type,

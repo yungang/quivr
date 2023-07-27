@@ -1,26 +1,26 @@
 /* eslint-disable */
 "use client";
-import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import Spinner from "@/lib/components/ui/Spinner";
+import { useAxios } from "@/lib/hooks";
 import { UserStats } from "@/lib/types/User";
-import { useAxios } from "@/lib/useAxios";
 
-import { useSupabase } from "../supabase-provider";
+import { useSupabase } from "@/lib/context/SupabaseProvider";
+import { redirectToLogin } from "@/lib/router/redirectToLogin";
 import { UserStatistics } from "./components/UserStatistics";
 
 const UserPage = (): JSX.Element => {
   const [userStats, setUserStats] = useState<UserStats>();
   const { session } = useSupabase();
   const { axiosInstance } = useAxios();
+
   if (session === null) {
-    redirect("/login");
+    redirectToLogin();
   }
 
   useEffect(() => {
     const fetchUserStats = async () => {
-      // setIsPending(true);
       try {
         console.log(
           `Fetching user stats from ${process.env.NEXT_PUBLIC_BACKEND_URL}/user`

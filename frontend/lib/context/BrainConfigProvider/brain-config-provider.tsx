@@ -3,22 +3,21 @@
 
 import { createContext, useEffect, useState } from "react";
 
-import { setEmptyStringsUndefined } from "@/lib/helpers/setEmptyStringsUndefined";
-
+import { removeUndefined } from "@/lib/helpers/removeUndefined";
 import {
   getBrainConfigFromLocalStorage,
   saveBrainConfigInLocalStorage,
 } from "./helpers/brainConfigLocalStorage";
-import { BrainConfig, ConfigContext } from "./types";
+import { BrainConfig, BrainConfigContextType } from "./types";
 
-export const BrainConfigContext = createContext<ConfigContext | undefined>(
-  undefined
-);
+export const BrainConfigContext = createContext<
+  BrainConfigContextType | undefined
+>(undefined);
 
 const defaultBrainConfig: BrainConfig = {
   model: "gpt-3.5-turbo-0613",
   temperature: 0,
-  maxTokens: 1000,
+  maxTokens: 256,
   keepLocal: true,
   anthropicKey: undefined,
   backendUrl: undefined,
@@ -39,7 +38,7 @@ export const BrainConfigProvider = ({
     setBrainConfig((config) => {
       const updatedConfig: BrainConfig = {
         ...config,
-        ...setEmptyStringsUndefined(newConfig),
+        ...removeUndefined(newConfig),
       };
       saveBrainConfigInLocalStorage(updatedConfig);
 

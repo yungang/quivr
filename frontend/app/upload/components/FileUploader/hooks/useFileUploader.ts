@@ -1,31 +1,40 @@
 /* eslint-disable */
-import { redirect } from "next/navigation";
 import { useCallback, useState } from "react";
 import { FileRejection, useDropzone } from "react-dropzone";
 
-import { useSupabase } from "@/app/supabase-provider";
-import { useToast } from "@/lib/hooks/useToast";
-import { useAxios } from "@/lib/useAxios";
+import { useBrainContext } from "@/lib/context/BrainProvider/hooks/useBrainContext";
+import { useSupabase } from "@/lib/context/SupabaseProvider";
+import { useAxios, useToast } from "@/lib/hooks";
+import { redirectToLogin } from "@/lib/router/redirectToLogin";
+import { useEventTracking } from "@/services/analytics/useEventTracking";
+import axios from "axios";
+import { UUID } from "crypto";
 
 export const useFileUploader = () => {
+  const { track } = useEventTracking();
   const [isPending, setIsPending] = useState(false);
   const { publish } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const { session } = useSupabase();
 
+  const { currentBrain } = useBrainContext();
   const { axiosInstance } = useAxios();
 
   if (session === null) {
-    redirect("/login");
+    redirectToLogin();
   }
 
   const upload = useCallback(
-    async (file: File) => {
+    async (file: File, brainId: UUID) => {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("uploadFile", file);
       try {
-        const response = await axiosInstance.post(`/upload`, formData);
-
+        void track("FILE_UPLOADED");
+        const response = await axiosInstance.post(
+          `/upload?brain_id=${brainId}`,
+          formData
+        );
+        track("FILE_UPLOADED");
         publish({
           variant: response.data.type,
           text:
@@ -33,11 +42,24 @@ export const useFileUploader = () => {
               ? "File uploaded successfully: "
               : "") + JSON.stringify(response.data.message),
         });
-      } catch (error: unknown) {
-        publish({
-          variant: "danger",
-          text: "Failed to upload file: " + JSON.stringify(error),
-        });
+      } catch (e: unknown) {
+        if (axios.isAxiosError(e) && e.response?.status === 403) {
+          publish({
+            variant: "danger",
+            text: `${JSON.stringify(
+              (
+                e.response as {
+                  data: { detail: string };
+                }
+              ).data.detail
+            )}`,
+          });
+        } else {
+          publish({
+            variant: "danger",
+            text: "Failed to upload file: " + JSON.stringify(e),
+          });
+        }
       }
     },
     [session.access_token, publish]
@@ -76,10 +98,15 @@ export const useFileUploader = () => {
       return;
     }
     setIsPending(true);
-
-    await Promise.all(files.map((file) => upload(file)));
-
-    setFiles([]);
+    if (currentBrain?.id !== undefined) {
+      await Promise.all(files.map((file) => upload(file, currentBrain?.id)));
+      setFiles([]);
+    } else {
+      publish({
+        text: "Please, select or create a brain to upload a file",
+        variant: "warning",
+      });
+    }
     setIsPending(false);
   };
 

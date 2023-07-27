@@ -12,6 +12,7 @@ import {
   models,
   paidModels,
 } from "@/lib/context/BrainConfigProvider/types";
+import { defineMaxTokens } from "@/lib/helpers/defineMexTokens";
 
 interface ModelConfigProps {
   register: UseFormRegister<BrainConfig>;
@@ -28,23 +29,7 @@ export const ModelConfig = ({
   temperature,
   maxTokens,
 }: ModelConfigProps): JSX.Element => {
-  const defineMaxTokens = (model: Model | PaidModels): number => {
-    //At the moment is evaluating only models from OpenAI
-    switch (model) {
-      case "gpt-3.5-turbo":
-        return 3000;
-      case "gpt-3.5-turbo-0613":
-        return 3000;
-      case "gpt-3.5-turbo-16k":
-        return 14000;
-      case "gpt-4":
-        return 6000;
-      case "gpt-4-0613":
-        return 6000;
-      default:
-        return 3000;
-    }
-  };
+  
 
   return (
     <>
